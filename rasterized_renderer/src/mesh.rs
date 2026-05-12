@@ -1,6 +1,6 @@
-use glium::{Surface, backend::Facade, draw_parameters, uniform};
+use glium::{Surface, backend::Facade, uniform};
 
-use crate::{transform::Transform, vertex::Vertex};
+use crate::{camera::Camera, transform::Transform, vertex::Vertex};
 
 pub struct Mesh {
     vertex_buffer: glium::VertexBuffer<Vertex>,
@@ -48,10 +48,19 @@ impl<'a> MeshRenderer<'a> {
         Ok(Self { program, draw_parameters })
     }
 
-    pub fn render(&self, frame: &mut glium::Frame, models: &[Model]) -> anyhow::Result<()> {
+    pub fn render(
+        &self, 
+        frame: &mut glium::Frame, 
+        camera: &Camera,
+        models: &[Model],
+    ) -> anyhow::Result<()> {
+        let view_projection = camera.view_projection_matrix();
+
         for model in models {
+            let model_matrix = model.transform.to_matrix();
+
             let uniforms = uniform! {
-                model: Into::<[f32; 3]>::into(model.transform.offset()),
+                model_view_projection: Into::<[[f32; 4]; 4]>::into(view_projection * model_matrix),
             };
 
             frame.draw(

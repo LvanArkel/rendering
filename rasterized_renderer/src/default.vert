@@ -1,9 +1,9 @@
 #version 140
 
-in vec2 position;
+in vec3 position;
 
-uniform vec3 model;
+uniform mat4 model_view_projection;
 
 void main() {
-    gl_Position = vec4(model + vec3(position, 0.0), 1.0);
+    gl_Position = model_view_projection * vec4(position, 1.0);
 }
