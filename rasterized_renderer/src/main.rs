@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use cgmath::{Deg, Vector3, point3, vec3};
+use cgmath::{Deg, Quaternion, Rad, Rotation3, Vector3, point3, vec3};
 use glium::{Surface, glutin::surface::WindowSurface, winit::{application::ApplicationHandler, event::WindowEvent}};
 use rasterized_renderer::{camera::Camera, mesh::{Mesh, MeshRenderer, Model}, transform::Transform, vertex::Vertex};
 
@@ -8,14 +8,14 @@ fn cube() -> (Vec<Vertex>, Vec<u16>) {
     let mut vertices = Vec::new();
     let mut indices = Vec::new();
     let positions = [
-        [0.0, 0.0, 0.0],
-        [1.0, 0.0, 0.0],
-        [0.0, 1.0, 0.0],
-        [1.0, 1.0, 0.0],
-        [0.0, 0.0, 1.0],
-        [1.0, 0.0, 1.0],
-        [0.0, 1.0, 1.0],
-        [1.0, 1.0, 1.0],
+        [-0.5, -0.5, -0.5],
+        [0.5, -0.5, -0.5],
+        [-0.5, 0.5, -0.5],
+        [0.5, 0.5, -0.5],
+        [-0.5, -0.5, 0.5],
+        [0.5, -0.5, 0.5],
+        [-0.5, 0.5, 0.5],
+        [0.5, 0.5, 0.5],
     ];
     let index_pattern: [u16; _] = [0, 1, 2, 2, 1, 3];
     let face_vertices = [
@@ -82,10 +82,12 @@ impl<'a> ApplicationHandler for SampleApp<'a> {
 
 impl<'a> SampleApp<'a> {
     fn render(&mut self) {
-        let t = self.t0.elapsed().as_secs_f32().sin();
+        let t = self.t0.elapsed().as_secs_f32();
 
         let model = &mut self.models[0];
-        model.transform.position = vec3(t, 0.0, 0.0);
+        model.transform.rotation = Quaternion::from_angle_y(Rad(t));
+        model.transform.position = vec3((t*2.0).sin(), 0.0, 0.0);
+        model.transform.scale = vec3(t.cos()*0.5+0.5, 1.0, 1.0);
 
         let mut frame = self.display.draw();
         frame.clear_color(0.0, 0.0, 1.0, 1.0);
@@ -111,7 +113,11 @@ fn main() {
 
     let model = Model {
         mesh: &mesh,
-        transform: Transform { position: Vector3::new(-0.5, 0.0, 0.0) },
+        transform: Transform { 
+            position: Vector3::new(0.5, 0.0, 0.0),
+            rotation: Quaternion::from_angle_x(Deg(45.0)),
+            scale: vec3(1.0, 1.0, 1.0),
+        },
     };
 
     
